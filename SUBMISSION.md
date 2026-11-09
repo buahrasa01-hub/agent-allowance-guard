@@ -5,7 +5,7 @@ things must be done by the human, in this order, **before
 2026-11-14T23:59:00Z**. Everything else (code, testnet deployment, tests,
 demo page) is already done in this repository.
 
-## 1. Make the repository public and push it
+## 1. Make the repository public and push it — ✅ DONE 2026-11-09 (https://github.com/buahrasa01-hub/agent-allowance-guard, public, pushed as buahrasa01-hub)
 
 GitHub CLI is not logged in on the build machine, so this push needs the
 human's GitHub login:
@@ -18,7 +18,7 @@ gh repo create agent-allowance-guard --public --source=. --remote=origin --push
 (Or create an empty public repo on github.com and `git push` this repo to
 it.) The repository must stay public through judging (until ~2026-11-25).
 
-## 2. Publish the demo post on X (human posts it personally)
+## 2. Publish the demo post on X — ✅ DONE 2026-11-09 (https://x.com/buahrasa1/status/2119748288861893001 — verified: repo link, @NEARProtocol, #NEARHackathon, demo screenshot attached)
 
 The post must say the project was built at NEAR HACKATHON, tag
 **@NEARProtocol** and **#NEARHackathon**, and attach a demo video or
