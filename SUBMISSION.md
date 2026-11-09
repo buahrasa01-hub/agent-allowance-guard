@@ -42,7 +42,7 @@ Draft text (edit freely, keep the tags):
 
 Save the post URL — it goes into the submission as `demoUrl`.
 
-## 3. Submit ONCE via the API (human confirms the exact payload first)
+## 3. Submit ONCE via the API — ✅ DONE 2026-11-09 ~18:10 WIB (POST /api/applications → HTTP 201 saved; payload submission-payload.json, requestId 73aac154-b3fc-48e4-8089-79f73af7e7dd; response in submission-response.txt)
 
 Collect these values from the human — never guess them:
 

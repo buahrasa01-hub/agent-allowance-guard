@@ -1,0 +1,16 @@
+{
+  "leadName": "Bayu Luqman Fadilah",
+  "email": "buahrasa01@gmail.com",
+  "projectName": "Agent Allowance Guard",
+  "size": "1",
+  "tracks": [
+    "security",
+    "agents"
+  ],
+  "projectUrl": "https://github.com/buahrasa01-hub/agent-allowance-guard",
+  "demoUrl": "https://x.com/buahrasa1/status/2119748288861893001",
+  "nearAddress": "9bd2c70eed527865b208e80e6cb2fb84019d9f16fbee136056d349fa8a44833d",
+  "idea": "AI agents need to spend money, but handing an agent a wallet key means one bug or prompt injection can drain everything, while approving every transaction by hand defeats the purpose of an agent. Agent Allowance Guard is a NEAR testnet smart contract that works like a bounded corporate card for agents: the owner creates an allowance with a spending cap, an expiry and a recipient allowlist. The agent can only pull funds inside that policy — every spend is checked on-chain before any transfer is scheduled, written to an append-only audit log and emitted as a NEP-297 event — and the owner can revoke instantly. NEAR makes this natural: predecessor-based caller identity authenticates the agent, the contract account itself is the vault, and subaccounts model owner/agent/payee roles. Verified live on testnet: an allowed 0.25 NEAR spend succeeded; over-cap and non-allowlisted spends were rejected on-chain.",
+  "consent": true,
+  "requestId": "73aac154-b3fc-48e4-8089-79f73af7e7dd"
+}
