@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Allowance Guard — live testnet demo</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background: #0c1116; color: #e6edf3; }
+  main { max-width: 880px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 26px; margin: 8px 0 4px; }
+  .sub { color: #9da7b1; margin: 0 0 20px; }
+  .card { background: #131a21; border: 1px solid #26303a; border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .card h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: #8be9c9; margin: 0 0 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  td, th { padding: 6px 8px; border-bottom: 1px solid #22303c; text-align: left; vertical-align: top; }
+  th { color: #9da7b1; font-weight: 600; }
+  td.k { color: #9da7b1; width: 34%; }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; word-break: break-all; }
+  .bar { height: 12px; background: #22303c; border-radius: 6px; overflow: hidden; margin: 10px 0 4px; }
+  .bar > div { height: 100%; background: linear-gradient(90deg, #2ea043, #8be9c9); width: 0%; }
+  .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .ok { background: #123d24; color: #7ee2a8; }
+  .bad { background: #4a1d1d; color: #ff9c9c; }
+  .banner { display: none; background: #4a380d; color: #ffd97e; border: 1px solid #8a6d1f; padding: 10px 14px; border-radius: 10px; margin: 12px 0; font-size: 14px; }
+  label { font-size: 13px; color: #9da7b1; display: block; margin: 8px 0 4px; }
+  input { width: 100%; box-sizing: border-box; background: #0c1116; color: #e6edf3; border: 1px solid #2c3a46; border-radius: 8px; padding: 8px 10px; font-family: ui-monospace, monospace; font-size: 13px; }
+  button { background: #1f6feb; color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px; }
+  button:hover { background: #388bfd; }
+  a { color: #58a6ff; }
+  .muted { color: #9da7b1; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🛡️ Agent Allowance Guard</h1>
+  <p class="sub">A policy engine / sandboxed allowance vault for AI agents, live on <b>NEAR testnet</b>.
+  An owner gives an agent a bounded allowance — spending cap, expiry, recipient allowlist — instead of wallet keys.
+  Every spend is checked on-chain and written to an audit log. Built at NEAR HACKATHON.</p>
+
+  <div id="sampleBanner" class="banner">⚠️ Showing <b>sample data</b> — the live RPC read did not complete. Values below are illustrative, not on-chain state.</div>
+
+  <div class="card">
+    <h2>Contract</h2>
+    <label>Contract account (the vault)</label>
+    <input id="contractId" value="guard.aag7734b.testnet">
+    <label>Agent account to inspect</label>
+    <input id="agentId" value="agent.aag7734b.testnet">
+    <button id="refreshBtn">↻ Refresh from NEAR testnet RPC</button>
+    <p class="muted">Owner: <span class="mono" id="owner">…</span> · Vault balance: <span id="vault">…</span></p>
+  </div>
+
+  <div class="card">
+    <h2>Allowance policy</h2>
+    <div id="allowanceBody"><p class="muted">Loading…</p></div>
+    <div class="bar"><div id="capBar"></div></div>
+    <p class="muted" id="capText"></p>
+  </div>
+
+  <div class="card">
+    <h2>On-chain audit log — every spend</h2>
+    <div id="logBody"><p class="muted">Loading…</p></div>
+  </div>
+
+  <p class="muted">Reads are plain JSON-RPC <code>call_function</code> queries against
+  <code>https://rpc.testnet.near.org</code> — no wallet, no build step, just open this file.
+  Verify on the explorer: <a id="explorerLink" href="https://explorer.testnet.near.org/accounts/guard.aag7734b.testnet" target="_blank" rel="noopener">guard.aag7734b.testnet</a>.</p>
+</main>
+
+<script>
+const RPC = 'https://rpc.testnet.near.org';
+const YOCTO = 10n ** 24n;
+
+function fmtNear(yoctoStr) {
+  const v = BigInt(yoctoStr);
+  const whole = v / YOCTO;
+  const frac = (v % YOCTO).toString().padStart(24, '0').slice(0, 4).replace(/0+$/, '');
+  return frac ? `${whole}.${frac} NEAR` : `${whole} NEAR`;
+}
+function fmtTime(nsStr) {
+  const ms = Number(BigInt(nsStr) / 1000000n);
+  return new Date(ms).toLocaleString();
+}
+function b64decode(s) { return atob(s); }
+function bytesToStr(bytes) { return new TextDecoder().decode(new Uint8Array(bytes)); }
+
+async function view(contractId, method, args) {
+  const argsBase64 = btoa(JSON.stringify(args));
+  const res = await fetch(RPC, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0', id: 'demo',
+      method: 'query',
+      params: { request_type: 'call_function', finality: 'final', account_id: contractId, method_name: method, args_base64: argsBase64 },
+    }),
+  });
+  const json = await res.json();
+  if (json.error) throw new Error(JSON.stringify(json.error));
+  return JSON.parse(bytesToStr(json.result.result));
+}
+
+// Clearly-labeled fallback, shaped exactly like the real e2e run.
+const SAMPLE = {
+  owner: 'aag7734b.testnet',
+  vault: '8240000000000000000000000',
+  allowance: {
+    agent: 'agent.aag7734b.testnet', cap: '1000000000000000000000000', spent: '250000000000000000000000',
+    remaining: '750000000000000000000000', expires_at: '1794223137608000000',
+    allowlist: ['payee.aag7734b.testnet'], revoked: true,
+  },
+  log: [{ agent: 'agent.aag7734b.testnet', to: 'payee.aag7734b.testnet', amount: '250000000000000000000000', block_timestamp: '1794218400000000000' }],
+};
+
+function render(data) {
+  document.getElementById('owner').textContent = data.owner;
+  document.getElementById('vault').textContent = fmtNear(data.vault);
+  const a = data.allowance;
+  const body = document.getElementById('allowanceBody');
+  if (!a) {
+    body.innerHTML = '<p>No allowance exists for this agent.</p>';
+    document.getElementById('capBar').style.width = '0%';
+    document.getElementById('capText').textContent = '';
+  } else {
+    const status = a.revoked
+      ? '<span class="pill bad">REVOKED</span>'
+      : (BigInt(a.expires_at) < BigInt(Date.now()) * 1000000n ? '<span class="pill bad">EXPIRED</span>' : '<span class="pill ok">ACTIVE</span>');
+    body.innerHTML = `<table>
+      <tr><td class="k">Agent</td><td class="mono">${a.agent}</td></tr>
+      <tr><td class="k">Status</td><td>${status}</td></tr>
+      <tr><td class="k">Spending cap</td><td>${fmtNear(a.cap)}</td></tr>
+      <tr><td class="k">Spent</td><td>${fmtNear(a.spent)}</td></tr>
+      <tr><td class="k">Remaining</td><td><b>${fmtNear(a.remaining)}</b></td></tr>
+      <tr><td class="k">Expires</td><td>${fmtTime(a.expires_at)}</td></tr>
+      <tr><td class="k">Allowlist (only these recipients)</td><td class="mono">${a.allowlist.join('<br>')}</td></tr>
+    </table>`;
+    const pct = Number((BigInt(a.spent) * 10000n) / BigInt(a.cap)) / 100;
+    document.getElementById('capBar').style.width = pct + '%';
+    document.getElementById('capText').textContent = `${pct}% of the cap used`;
+  }
+  const logBody = document.getElementById('logBody');
+  if (!data.log || data.log.length === 0) {
+    logBody.innerHTML = '<p class="muted">No spends recorded yet.</p>';
+  } else {
+    logBody.innerHTML = '<table><tr><th>When</th><th>Agent</th><th>To</th><th>Amount</th></tr>' +
+      data.log.map(e => `<tr><td>${fmtTime(e.block_timestamp)}</td><td class="mono">${e.agent}</td><td class="mono">${e.to}</td><td>${fmtNear(e.amount)}</td></tr>`).join('') +
+      '</table>';
+  }
+}
+
+async function refresh() {
+  const contractId = document.getElementById('contractId').value.trim();
+  const agentId = document.getElementById('agentId').value.trim();
+  document.getElementById('explorerLink').href = `https://explorer.testnet.near.org/accounts/${contractId}`;
+  document.getElementById('explorerLink').textContent = contractId;
+  try {
+    const [owner, vault, allowance, log] = await Promise.all([
+      view(contractId, 'get_owner', {}),
+      view(contractId, 'vault_balance', {}),
+      view(contractId, 'get_allowance', { agent_id: agentId }),
+      view(contractId, 'get_spend_log', { from_index: 0, limit: 50 }),
+    ]);
+    document.getElementById('sampleBanner').style.display = 'none';
+    render({ owner, vault, allowance, log });
+  } catch (err) {
+    console.warn('RPC read failed, showing sample data:', err);
+    document.getElementById('sampleBanner').style.display = 'block';
+    render(SAMPLE);
+  }
+}
+
+document.getElementById('refreshBtn').addEventListener('click', refresh);
+refresh();
+</script>
+</body>
+</html>
