@@ -1,0 +1,11 @@
+{
+  "network": "testnet",
+  "rpc": "https://rpc.testnet.near.org",
+  "owner": "aag7734b.testnet",
+  "contractId": "guard.aag7734b.testnet",
+  "agent": "agent.aag7734b.testnet",
+  "payee": "payee.aag7734b.testnet",
+  "wasmBytes": 546317,
+  "deployTx": "HPeKnZP1Qh3BgmmaHNrB9qJzkemheSBJdhT8zXkuBVF6",
+  "initTx": "Fm2MjW7jBhZGSDbHkJGL3zsAXZRRkXxmJGZ7zEY1cEa4"
+}

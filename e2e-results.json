@@ -1,0 +1,53 @@
+{
+  "steps": [
+    {
+      "name": "create_allowance (cap 1 NEAR, allowlist=[payee])",
+      "ok": true,
+      "detail": "",
+      "tx": "YyZuQA1mV3suWQb7D6hNHgg1jXGyz6MczkKFCxX8Y5k"
+    },
+    {
+      "name": "get_allowance shows cap 1 NEAR, spent 0",
+      "ok": true,
+      "detail": "cap=1 NEAR remaining=1 NEAR",
+      "tx": null
+    },
+    {
+      "name": "spend 0.25 NEAR to allowlisted payee succeeds",
+      "ok": true,
+      "detail": "payee balance +0.25 NEAR",
+      "tx": "9hhaiv48Q6nESBuURHDQ1KofVfnnsjtwWszhx7ASvNhm"
+    },
+    {
+      "name": "spend 0.80 NEAR fails: spending cap exceeded",
+      "ok": true,
+      "detail": "{\"index\":0,\"kind\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: assertion failed: spending cap exceeded\\n    at assert (bui",
+      "tx": null
+    },
+    {
+      "name": "spend to non-allowlisted account fails",
+      "ok": true,
+      "detail": "{\"index\":0,\"kind\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: assertion failed: recipient is not on the allowlist\\n    at",
+      "tx": null
+    },
+    {
+      "name": "on-chain spend log has exactly the 1 allowed spend",
+      "ok": true,
+      "detail": "entries=1, amount=0.25 NEAR",
+      "tx": null
+    },
+    {
+      "name": "owner revoke() takes effect instantly",
+      "ok": true,
+      "detail": "",
+      "tx": "EgCmj9cv52QrE49KnXiL5LkiDZyjpZJjdyKCB1p49CGz"
+    },
+    {
+      "name": "spend after revoke fails",
+      "ok": true,
+      "detail": "{\"index\":0,\"kind\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: assertion failed: allowance has been revoked\\n    at assert",
+      "tx": null
+    }
+  ],
+  "vaultBalanceNear": "8.245031110874112"
+}
