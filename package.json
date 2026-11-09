@@ -1,0 +1,27 @@
+{
+  "name": "agent-allowance-guard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Agent Allowance Guard - policy engine / sandboxed allowance vault for AI agents on NEAR (testnet). NEAR HACKATHON submission.",
+  "license": "MIT",
+  "scripts": {
+    "build": "near-sdk-js build contract/src/contract.ts build/contract.wasm",
+    "test": "node --test tests/contract.test.mjs tests/testnet.test.mjs",
+    "deploy": "node scripts/deploy.mjs",
+    "e2e": "node scripts/e2e.mjs"
+  },
+  "dependencies": {
+    "near-sdk-js": "latest"
+  },
+  "devDependencies": {
+    "@near-js/accounts": "latest",
+    "@near-js/crypto": "latest",
+    "@near-js/keystores-node": "latest",
+    "@near-js/providers": "latest",
+    "@near-js/signers": "latest",
+    "@near-js/transactions": "latest",
+    "@near-js/utils": "latest",
+    "typescript": "^5.9.3"
+  }
+}

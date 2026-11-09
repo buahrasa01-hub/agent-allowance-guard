@@ -1,0 +1,15 @@
+# Secrets — NEVER commit keys
+.near-keys/
+*.json.key
+**/near-credentials/
+
+# Dependencies
+node_modules/
+
+# near-sdk-js build intermediates (the final contract.wasm is kept)
+build/*
+!build/contract.wasm
+
+# Misc
+.DS_Store
+*.log
